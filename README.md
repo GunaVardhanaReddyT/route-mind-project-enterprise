@@ -51,7 +51,7 @@ Features:
 - Re-solves routes in less than 30 seconds.
 - Shows route changes for supervisor approval.
 
-### AI Explanations (Optional)
+### AI Explanations
 
 - Uses AWS Bedrock with the Kimi K2.5 model.
 - Generates human-readable explanations for supervisors.
