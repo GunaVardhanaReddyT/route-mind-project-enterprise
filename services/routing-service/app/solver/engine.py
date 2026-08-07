@@ -18,7 +18,39 @@ class RouteOptimizer:
             except Exception as e:
                 logger.warning(f"Redis connection failed: {e}")
 
-    def _haversine(self, coord1: Tuple[float, float], coord2: Tuple[float, float]) -> float:
+    def _build_distance_matrix_fast(self, locations: List[Tuple[float, float]]) -> List[List[int]]:
+        """Build distance matrix using vectorized numpy operations"""
+        import numpy as np
+        
+        n = len(locations)
+        lats = np.array([loc[0] for loc in locations])
+        lons = np.array([loc[1] for loc in locations])
+        
+        # Convert to radians
+        lat_rad = np.radians(lats)
+        lon_rad = np.radians(lons)
+        
+        # Build distance matrix using broadcasting
+        dlat = lat_rad[:, np.newaxis] - lat_rad
+        dlon = lon_rad[:, np.newaxis] - lon_rad
+        
+        a = np.sin(dlat/2)**2 + np.cos(lat_rad[:, np.newaxis]) * np.cos(lat_rad) * np.sin(dlon/2)**2
+        c = 2 * np.arcsin(np.sqrt(a))
+        
+        distance_matrix = (6371 * c * 1000).astype(int).tolist()  # Convert to meters and int
+        
+        return distance_matrix
+
+    def _generate_cache_key(self, depot: Tuple[float, float], stops: List[Dict], vehicles: List[Dict]) -> str:
+        """Generate cache key for a routing problem"""
+        import hashlib
+        
+        # Create deterministic hash from problem parameters
+        stops_str = ",".join(sorted([f"{s['lat']},{s['lon']},{s.get('cod_amount', 0)}" for s in stops]))
+        vehicles_str = ",".join(sorted([f"{v['id']}" for v in vehicles]))
+        key_str = f"{depot[0]},{depot[1]}|{stops_str}|{vehicles_str}"
+        
+        return f"route:v1:{hashlib.md5(key_str.encode()).hexdigest()}"
         R = 6371
         lat1, lon1 = np.radians(coord1)
         lat2, lon2 = np.radians(coord2)
@@ -36,15 +68,25 @@ class RouteOptimizer:
             return {"routes": [], "total_distance_km": 0, "solve_time_ms": 0, "status": "no_stops",
                     "constraints_applied": ["cod_limit", "zone_timing", "odd_even"]}
 
+        # Check Redis cache for this exact problem
+        cache_key = self._generate_cache_key(depot, stops, vehicles)
+        if self.redis_client:
+            try:
+                cached = self.redis_client.get(cache_key)
+                if cached:
+                    result = json.loads(cached)
+                    result["cache_hit"] = True
+                    result["solve_time_ms"] = int((time.time() - start_time) * 1000)
+                    return result
+            except Exception as e:
+                logger.warning(f"Redis cache read failed: {e}")
+
         locations = [depot] + [(s["lat"], s["lon"]) for s in stops]
         n_locations = len(locations)
         n_vehicles = len(vehicles)
 
-        distance_matrix = [[0] * n_locations for _ in range(n_locations)]
-        for i in range(n_locations):
-            for j in range(n_locations):
-                if i != j:
-                    distance_matrix[i][j] = int(self._haversine(locations[i], locations[j]) * 1000)
+        # Pre-compute distance matrix (optimized with numpy)
+        distance_matrix = self._build_distance_matrix_fast(locations)
 
         manager = pywrapcp.RoutingIndexManager(n_locations, n_vehicles, 0)
         routing = pywrapcp.RoutingModel(manager)
@@ -66,7 +108,6 @@ class RouteOptimizer:
 
         cod_callback_index = routing.RegisterUnaryTransitCallback(cod_callback)
         
-        # COD limit: ₹50,000 per vehicle
         routing.AddDimensionWithVehicleCapacity(
             cod_callback_index,
             0,  # null capacity slack
@@ -75,10 +116,17 @@ class RouteOptimizer:
             "COD"
         )
 
+        # Optimized search parameters
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-        search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
-        search_parameters.time_limit.FromSeconds(time_limit_seconds)
+        
+        # Use different strategy based on problem size
+        if n_locations <= 20:
+            search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
+            search_parameters.time_limit.FromSeconds(min(time_limit_seconds, 10))  # Shorter for small problems
+        else:
+            search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.AUTOMATIC
+            search_parameters.time_limit.FromSeconds(time_limit_seconds)
 
         solution = routing.SolveWithParameters(search_parameters)
         solve_time_ms = int((time.time() - start_time) * 1000)
@@ -115,8 +163,25 @@ class RouteOptimizer:
                 })
                 total_distance += route_distance
 
-        return {"routes": routes, "total_distance_km": round(total_distance / 1000, 2), "solve_time_ms": solve_time_ms,
-                "status": "success", "constraints_applied": ["cod_limit", "zone_timing", "odd_even"]}
+        solve_time_ms_solver = int((time.time() - start_time) * 1000)
+
+        result = {
+            "routes": routes, 
+            "total_distance_km": round(total_distance / 1000, 2), 
+            "solve_time_ms": solve_time_ms_solver,
+            "status": "success", 
+            "constraints_applied": ["cod_limit", "zone_timing", "odd_even"],
+            "cache_hit": False
+        }
+
+        # Cache the result for 5 minutes
+        if self.redis_client:
+            try:
+                self.redis_client.setex(cache_key, 300, json.dumps(result))
+            except Exception as e:
+                logger.warning(f"Redis cache write failed: {e}")
+
+        return result
 
     def replan_route(self, existing_routes: List[Dict], depot: Tuple[float, float], 
                      all_stops: List[Dict], vehicles: List[Dict],
