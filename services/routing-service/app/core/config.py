@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
-    # Bedrock Model Config (Optional - has defaults)
     BEDROCK_MODEL_ID: str = "moonshotai.kimi-k2.5"
 
     class Config:
