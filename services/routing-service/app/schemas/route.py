@@ -1,16 +1,34 @@
-from sqlalchemy import Column, Integer, ForeignKey, String
-from app.db.base import Base
+from pydantic import BaseModel
+from typing import List, Optional
 
-class Route(Base):
-    __tablename__ = "routes"
-    id = Column(Integer, primary_key=True, index=True)
-    vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
-    status = Column(String, default="planned") # planned, active, completed
-    hub_id = Column(Integer, nullable=False)
 
-class RouteStop(Base):
-    __tablename__ = "route_stops"
-    id = Column(Integer, primary_key=True, index=True)
-    route_id = Column(Integer, ForeignKey("routes.id"), nullable=False)
-    stop_id = Column(Integer, ForeignKey("stops.id"), nullable=False)
-    sequence = Column(Integer, nullable=False)
+class StopBase(BaseModel):
+    address: str
+    lat: float
+    lon: float
+    cod_amount: float = 0.0
+
+
+class StopResponse(StopBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class RouteBase(BaseModel):
+    vehicle_id: int
+    status: str = "planned"
+    hub_id: int
+
+
+class RouteCreate(RouteBase):
+    stop_ids: List[int]
+
+
+class RouteResponse(RouteBase):
+    id: int
+    stops: List[int]
+
+    class Config:
+        from_attributes = True

@@ -5,7 +5,7 @@ class Route(Base):
     __tablename__ = "routes"
     id = Column(Integer, primary_key=True, index=True)
     vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
-    status = Column(String, default="planned") # planned, active, completed
+    status = Column(String, default="planned")
     hub_id = Column(Integer, nullable=False)
 
 class RouteStop(Base):
