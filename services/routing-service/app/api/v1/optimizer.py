@@ -11,6 +11,7 @@ from app.api.deps import get_db
 from app.models.vehicle import Vehicle
 from app.models.stop import Stop
 from app.core.config import settings
+from app.api.v1 import metrics
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -148,11 +149,36 @@ Keep it professional and concise."""
     else:
         explanation = f"Routes optimized using OR-Tools solver. {len(solution.get('routes', []))} routes created covering {solution.get('total_distance_km', 0):.2f} km. Constraints applied: COD Limit (₹50k), Zone Timing, Odd-Even."
 
+    # Record metrics for business impact tracking
+    metrics.record_optimization(
+        distance_km=solution.get("total_distance_km", 0),
+        solve_time_ms=solution.get("solve_time_ms", 0),
+        ai_cost=ai_cost
+    )
+    
+    # Add visualization data for presentation
+    visualization = {
+        "depot": {"lat": 28.6139, "lon": 77.2090, "label": "Delhi Hub"},
+        "routes": []
+    }
+    
+    for idx, route in enumerate(solution.get("routes", [])):
+        route_viz = {
+            "route_id": idx + 1,
+            "vehicle_plate": vehicles[idx]["plate_number"] if idx < len(vehicles) else "N/A",
+            "stops": [{"lat": stops[s]["lat"], "lon": stops[s]["lon"], "address": stops[s].get("address", f"Stop {s}")} 
+                     for s in route["stop_indices"]],
+            "distance_km": route.get("distance_km", 0),
+            "color": ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A"][idx % 4]
+        }
+        visualization["routes"].append(route_viz)
+    
     return {
         **solution,
         "explanation": explanation,
         "ai_cost_usd": ai_cost,
-        "model_used": settings.BEDROCK_MODEL_ID
+        "model_used": settings.BEDROCK_MODEL_ID,
+        "visualization": visualization  # For demo presentation
     }
 
 
@@ -285,6 +311,14 @@ In 1-2 sentences, explain what changed and what the driver should know."""
         change_type = "new pickup" if new_stop_id else "failed delivery"
         explanation = f"Route {route_id} re-planned due to {change_type} ({reason}). {replan_result.get('changes', {}).get('affected_routes', 0)} routes affected. Total distance: {replan_result.get('total_distance_km', 0):.2f} km. Driver will be notified of sequence changes."
 
+    # Record replan metrics
+    metrics.record_replan()
+    metrics.record_optimization(
+        distance_km=replan_result.get("total_distance_km", 0),
+        solve_time_ms=replan_result.get("solve_time_ms", 0),
+        ai_cost=ai_cost
+    )
+    
     return {
         **replan_result,
         "explanation": explanation,

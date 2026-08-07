@@ -27,6 +27,10 @@ async def on_startup():
 app.include_router(optimizer.router, prefix=f"{settings.API_V1_PREFIX}/optimizer", tags=["optimizer"])
 app.include_router(routes.router, prefix=f"{settings.API_V1_PREFIX}/routes", tags=["routes"])
 
+# Metrics for business impact demonstration
+from app.api.v1 import metrics
+app.include_router(metrics.router, prefix=f"{settings.API_V1_PREFIX}", tags=["metrics"])
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "service": "routing"}

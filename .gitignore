@@ -130,5 +130,4 @@ coverage.xml
 *.bak
 *.old
 *.txt
-*.md
 *.text
