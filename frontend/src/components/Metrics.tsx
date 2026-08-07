@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface CostAnalysis {
   routes_computed: number

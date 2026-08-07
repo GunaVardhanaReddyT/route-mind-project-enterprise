@@ -3,11 +3,12 @@ import { cn } from '../../lib/utils'
 
 interface ButtonProps {
   children: ReactNode
-  onClick?: () => void
+  onClick?: (e?: any) => void
   variant?: 'primary' | 'secondary' | 'success' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
   className?: string
+  type?: 'button' | 'submit' | 'reset'
 }
 
 export default function Button({
@@ -17,6 +18,7 @@ export default function Button({
   size = 'md',
   disabled = false,
   className,
+  type = 'button',
 }: ButtonProps) {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
   
@@ -35,6 +37,7 @@ export default function Button({
 
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}

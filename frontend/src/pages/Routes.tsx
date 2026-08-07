@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Play, AlertTriangle, Sparkles, TrendingUp } from 'lucide-react'
+import { Play, AlertTriangle, Sparkles, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
@@ -53,6 +53,7 @@ export default function Routes() {
   const [result, setResult] = useState<OptimizationResult | null>(null)
   const [selectedRouteId, setSelectedRouteId] = useState<number | undefined>()
   const [replanningRouteId, setReplanningRouteId] = useState<number | null>(null)
+  const [showDetails, setShowDetails] = useState(true)
 
   const handleOptimize = async () => {
     if (demoMode) {
@@ -96,13 +97,13 @@ export default function Routes() {
   }
 
   return (
-    <div className="h-full flex gap-6">
-      <div className="flex-1 flex flex-col">
-        <Card className="flex-1 flex flex-col">
+    <div className="h-full flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <div className="w-full lg:flex-1 flex flex-col order-2 lg:order-1">
+        <Card className="flex-1 flex flex-col h-96 lg:h-full">
           <CardHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <CardTitle>Route Visualization</CardTitle>
-              <Button onClick={handleOptimize} disabled={loading} size="sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <CardTitle className="text-base sm:text-lg">Route Visualization</CardTitle>
+              <Button onClick={handleOptimize} disabled={loading} size="sm" className="w-full sm:w-auto">
                 {loading ? (
                   <>
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
@@ -127,7 +128,16 @@ export default function Routes() {
         </Card>
       </div>
 
-      <div className="w-96 flex flex-col space-y-6 overflow-y-auto">
+      <div className="w-full lg:w-96 order-1 lg:order-2">
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="lg:hidden w-full flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg mb-4 border border-slate-200 dark:border-slate-800"
+        >
+          <span className="font-semibold text-sm">Route Details</span>
+          {showDetails ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </button>
+
+        <div className={`${showDetails ? 'flex' : 'hidden'} lg:flex flex-col space-y-4 lg:space-y-6 overflow-y-auto max-h-96 lg:max-h-full`}>
         {result && (
           <>
             <Card>
@@ -177,7 +187,7 @@ export default function Routes() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {result.visualization?.routes.map((route, idx) => (
+                  {result.visualization?.routes.map((route) => (
                     <div
                       key={route.route_id}
                       className={`p-4 cursor-pointer transition-colors ${
@@ -248,12 +258,13 @@ export default function Routes() {
           <Card>
             <CardContent className="py-12 text-center">
               <TrendingUp className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 Click "Optimize Routes" to start
               </p>
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
     </div>
   )

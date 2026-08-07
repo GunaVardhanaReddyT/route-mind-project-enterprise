@@ -13,7 +13,6 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [darkMode, setDarkMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
     // Check for saved token
@@ -26,14 +25,17 @@ function App() {
 
   const handleLogin = (newToken: string) => {
     localStorage.setItem('routemind_token', newToken)
-    setToken(newToken)
     setIsAuthenticated(true)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('routemind_token')
-    setToken(null)
     setIsAuthenticated(false)
+  }
+
+  const handleNavigate = (page: Page) => {
+    setCurrentPage(page)
+    setSidebarOpen(false)
   }
 
   if (!isAuthenticated) {
@@ -56,17 +58,31 @@ function App() {
   return (
     <AppProvider>
       <div className={darkMode ? 'dark' : ''}>
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
-          <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-slate-900 rounded-md shadow-lg text-slate-900 dark:text-slate-100"
+          >
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+
+          <div className={`fixed lg:static inset-0 z-40 lg:z-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out`}>
+            {sidebarOpen && (
+              <div className="lg:hidden fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+            )}
+            <div className="relative">
+              <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
+            </div>
+          </div>
           
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden w-full">
             <Header 
               darkMode={darkMode} 
               onToggleDarkMode={() => setDarkMode(!darkMode)}
               onLogout={handleLogout}
             />
             
-            <main className="flex-1 overflow-y-auto p-6">
+            <main className="flex-1 overflow-y-auto p-4 md:p-6">
               {renderPage()}
             </main>
           </div>

@@ -39,7 +39,7 @@ export default function Settings() {
             <Info className="h-5 w-5 text-primary mt-0.5" />
             <div className="text-sm text-slate-600 dark:text-slate-400">
               <p>RouteMind is an AI-powered route optimization platform for Indian logistics.</p>
-              <p className="mt-2">Built for AI Build 2026 hackathon by Team RouteMind.</p>
+              <p className="mt-2">Built for AI Build 2026 hackathon by Team route-club (T080).</p>
               <p className="mt-4 text-xs text-slate-500">
                 Powered by Google OR-Tools and AWS Bedrock
               </p>

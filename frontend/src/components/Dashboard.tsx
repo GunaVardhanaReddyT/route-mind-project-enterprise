@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, DollarSign, Zap, Clock } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+// Charts removed for simplicity
 
 interface MetricsData {
   performance: {

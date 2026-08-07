@@ -30,7 +30,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="animate-pulse">
-            <CardContent className="h-32" />
+            <CardContent className="h-32"><div /></CardContent>
           </Card>
         ))}
       </div>
@@ -69,8 +69,8 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => {
           const Icon = stat.icon
           return (
@@ -91,7 +91,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Efficiency vs Baseline</CardTitle>
@@ -139,46 +139,37 @@ export default function Dashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>System Health</CardTitle>
+          <CardTitle>Performance Metrics</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-slate-600 dark:text-slate-400">CPU Usage</span>
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {metrics.system_health.cpu_percent.toFixed(1)}%
-                </span>
-              </div>
-              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${metrics.system_health.cpu_percent}%` }}
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600 dark:text-slate-400">Total Optimizations</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                {metrics.performance.total_optimizations}
+              </span>
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-slate-600 dark:text-slate-400">Memory Usage</span>
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {metrics.system_health.memory_percent.toFixed(1)}%
-                </span>
-              </div>
-              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                <div 
-                  className="bg-success h-2 rounded-full transition-all"
-                  style={{ width: `${metrics.system_health.memory_percent}%` }}
-                />
-              </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600 dark:text-slate-400">Total Re-plans</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                {metrics.performance.total_replans}
+              </span>
             </div>
-          </div>
 
-          <div className="mt-4 flex items-center space-x-2">
-            <div className={`h-2 w-2 rounded-full ${metrics.system_health.status === 'healthy' ? 'bg-success' : 'bg-danger'}`} />
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              Status: {metrics.system_health.status}
-            </span>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600 dark:text-slate-400">Distance Optimized</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                {formatDistance(metrics.performance.total_distance_optimized_km)}
+              </span>
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-2">
+              <div className={`h-2 w-2 rounded-full ${metrics.system_health.status === 'healthy' ? 'bg-success' : 'bg-danger'}`} />
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                System: {metrics.system_health.status}
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
