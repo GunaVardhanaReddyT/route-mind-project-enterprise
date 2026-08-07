@@ -1,5 +1,7 @@
 import { Moon, Sun, ToggleLeft, ToggleRight, LogOut } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useEffect } from 'react'
+import { getHubs } from '../../lib/api'
 
 interface HeaderProps {
   darkMode: boolean
@@ -8,7 +10,25 @@ interface HeaderProps {
 }
 
 export default function Header({ darkMode, onToggleDarkMode, onLogout }: HeaderProps) {
-  const { hubId, setHubId, demoMode, setDemoMode } = useApp()
+  const { hubId, setHubId, demoMode, setDemoMode, hubs, setHubs } = useApp()
+
+  useEffect(() => {
+    loadHubs()
+  }, [])
+
+  const loadHubs = async () => {
+    try {
+      const data = await getHubs()
+      setHubs(data)
+    } catch (err) {
+      // Use fallback hubs
+      setHubs([
+        { id: 1, name: 'Delhi NCR', city: 'Delhi' },
+        { id: 2, name: 'Mumbai', city: 'Mumbai' },
+        { id: 3, name: 'Bangalore', city: 'Bangalore' },
+      ])
+    }
+  }
 
   return (
     <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6">
@@ -18,9 +38,19 @@ export default function Header({ darkMode, onToggleDarkMode, onLogout }: HeaderP
           onChange={(e) => setHubId(Number(e.target.value))}
           className="px-2 md:px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs md:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <option value={1}>Delhi NCR</option>
-          <option value={2}>Mumbai</option>
-          <option value={3}>Bangalore</option>
+          {hubs.length > 0 ? (
+            hubs.map((hub) => (
+              <option key={hub.id} value={hub.id}>
+                {hub.city}
+              </option>
+            ))
+          ) : (
+            <>
+              <option value={1}>Delhi NCR</option>
+              <option value={2}>Mumbai</option>
+              <option value={3}>Bangalore</option>
+            </>
+          )}
         </select>
       </div>
 

@@ -5,6 +5,8 @@ interface AppContextType {
   setHubId: (id: number) => void
   demoMode: boolean
   setDemoMode: (mode: boolean) => void
+  hubs: any[]
+  setHubs: (hubs: any[]) => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -12,9 +14,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [hubId, setHubId] = useState(1)
   const [demoMode, setDemoMode] = useState(false)
+  const [hubs, setHubs] = useState<any[]>([])
 
   return (
-    <AppContext.Provider value={{ hubId, setHubId, demoMode, setDemoMode }}>
+    <AppContext.Provider value={{ hubId, setHubId, demoMode, setDemoMode, hubs, setHubs }}>
       {children}
     </AppContext.Provider>
   )
