@@ -1,0 +1,52 @@
+ADD YOUR BEDROCK API KEY
+========================
+
+ON YOUR EC2, RUN:
+-----------------
+nano .env
+
+
+ADD THIS LINE:
+--------------
+BEDROCK_API_KEY=your_actual_bedrock_api_key_here
+
+(Paste your Kimi K2.5 Bedrock API key)
+
+
+KEEP THESE LINES:
+-----------------
+AWS_REGION=us-east-2
+
+
+YOU CAN REMOVE/IGNORE THESE (not needed with Bedrock API key):
+---------------------------------------------------------------
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+
+
+SAVE: Ctrl+X, Y, Enter
+
+
+REBUILD AND RESTART:
+--------------------
+docker-compose down
+docker-compose build routing-service
+docker-compose up -d
+sleep 30
+docker-compose exec routing-service python seed_simple.py
+
+
+TEST:
+-----
+curl -X POST "http://localhost:8002/api/v1/optimizer/optimize?hub_id=1&use_ai_explanation=true"
+
+
+YOU SHOULD SEE:
+---------------
+{
+  "routes": [...],
+  "total_distance_km": 45.67,
+  "explanation": "AI generated explanation here...",
+  "ai_cost_usd": 0.001,
+  "model_used": "moonshotai.kimi-k2.5"
+}

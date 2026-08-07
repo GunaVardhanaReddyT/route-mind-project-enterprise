@@ -96,9 +96,7 @@ echo "4️⃣  Testing Route Re-planning"
 echo "------------------------------"
 echo -e "${YELLOW}Testing replan with new pickup...${NC}"
 test_endpoint_verbose "Replan Route (new pickup)" \
-    "$BASE_URL:$ROUTING_PORT/api/v1/optimizer/replan?route_id=1&new_stop_id=5&reason=new_pickup&hub_id=1" \
     "POST" \
-    '{}'
 
 echo ""
 echo "5️⃣  Summary"
