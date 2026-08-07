@@ -23,17 +23,21 @@ interface RouteMapProps {
   selectedRouteId?: number
 }
 
-function FitBounds({ depot, routes }: { depot?: any; routes?: any[] }) {
+export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapProps) {
   const map = useMap()
 
   useEffect(() => {
-    if (depot && routes && routes.length > 0) {
+    if (depot && map) {
+      // Center map on the depot location
+      map.setView([depot.lat, depot.lon], 12)
+    }
+  }, [depot, map])
+
+  useEffect(() => {
+    if (depot && routes && routes.length > 0 && map) {
       const bounds = L.latLngBounds([])
-      
-      // Add depot
       bounds.extend([depot.lat, depot.lon])
       
-      // Add all route stops
       routes.forEach(route => {
         route.stops.forEach((stop: any) => {
           bounds.extend([stop.lat, stop.lon])
@@ -50,8 +54,8 @@ function FitBounds({ depot, routes }: { depot?: any; routes?: any[] }) {
 }
 
 export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapProps) {
-  const defaultCenter: [number, number] = depot ? [depot.lat, depot.lon] : [28.6139, 77.2090]
-  const defaultZoom = 12
+  const defaultCenter: [number, number] = depot ? [depot.lat, depot.lon] : [20.5937, 78.9629]
+  const defaultZoom = depot ? 12 : 5
 
   const depotIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -131,4 +135,33 @@ export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapPro
       <FitBounds depot={depot} routes={routes} />
     </MapContainer>
   )
+}
+
+function FitBounds({ depot, routes }: { depot?: any; routes?: any[] }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (depot && map) {
+      map.setView([depot.lat, depot.lon], 12)
+    }
+  }, [depot, map])
+
+  useEffect(() => {
+    if (depot && routes && routes.length > 0 && map) {
+      const bounds = L.latLngBounds([])
+      bounds.extend([depot.lat, depot.lon])
+      
+      routes.forEach(route => {
+        route.stops.forEach((stop: any) => {
+          bounds.extend([stop.lat, stop.lon])
+        })
+      })
+      
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50] })
+      }
+    }
+  }, [depot, routes, map])
+
+  return null
 }

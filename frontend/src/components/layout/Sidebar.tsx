@@ -1,14 +1,16 @@
-import { LayoutDashboard, MapPin, Settings } from 'lucide-react'
+import { LayoutDashboard, MapPin, Settings, Trophy, Zap } from 'lucide-react'
 
 interface SidebarProps {
   currentPage: string
-  onNavigate: (page: 'dashboard' | 'routes' | 'settings') => void
+  onNavigate: (page: 'dashboard' | 'routes' | 'settings' | 'amazon' | 'live') => void
 }
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const navItems = [
+    { id: 'live', icon: Zap, label: 'Live Routing' },
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'routes', icon: MapPin, label: 'Routes' },
+    { id: 'amazon', icon: Trophy, label: 'Amazon Challenge' },
     { id: 'settings', icon: Settings, label: 'Settings' },
   ]
 

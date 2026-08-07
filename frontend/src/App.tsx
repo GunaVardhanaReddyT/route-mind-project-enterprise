@@ -5,10 +5,12 @@ import Header from './components/layout/Header'
 import Dashboard from './pages/Dashboard'
 import Routes from './pages/Routes'
 import Settings from './pages/Settings'
+import { AmazonChallenge } from './pages/AmazonChallenge'
+import { LiveRouting } from './pages/LiveRouting'
 import Login from './pages/Login'
 import { Menu, X } from 'lucide-react'
 
-type Page = 'dashboard' | 'routes' | 'settings'
+type Page = 'dashboard' | 'routes' | 'settings' | 'amazon' | 'live'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
@@ -50,6 +52,10 @@ function App() {
         return <Routes />
       case 'settings':
         return <Settings />
+      case 'amazon':
+        return <AmazonChallenge />
+      case 'live':
+        return <LiveRouting />
       default:
         return <Dashboard />
     }
