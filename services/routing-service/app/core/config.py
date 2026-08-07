@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -9,9 +10,14 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
     AWS_REGION: str = "us-east-2"
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+
+    # Bedrock Model Config (Optional - has defaults)
+    BEDROCK_MODEL_ID: str = "moonshotai.kimi-k2.5"
 
     class Config:
         env_file = ".env"

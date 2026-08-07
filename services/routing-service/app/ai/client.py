@@ -17,7 +17,7 @@ class BedrockClient:
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-        self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+        self.model_id = "moonshotai.kimi-k2.5"
         self.total_cost = 0.0
 
     async def generate_explanation(
