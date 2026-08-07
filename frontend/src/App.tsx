@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Routes from './pages/Routes'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
+import { Menu, X } from 'lucide-react'
 
 type Page = 'dashboard' | 'routes' | 'settings'
 
@@ -13,12 +14,11 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [darkMode, setDarkMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    // Check for saved token
     const savedToken = localStorage.getItem('routemind_token')
     if (savedToken) {
-      setToken(savedToken)
       setIsAuthenticated(true)
     }
   }, [])

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Clock, Zap, DollarSign } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { getMetrics, MetricsData } from '../lib/api'
 import { formatDistance, formatTime, formatCurrency } from '../lib/utils'

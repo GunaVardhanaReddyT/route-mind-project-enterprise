@@ -114,7 +114,7 @@ export default function Metrics() {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis label={{ value: 'Cost (USD)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip formatter={(value: number) => `$${value.toFixed(4)}`} />
+            <Tooltip formatter={(value: any) => value ? `$${Number(value).toFixed(4)}` : '$0'} />
             <Bar dataKey="cost" />
           </BarChart>
         </ResponsiveContainer>
