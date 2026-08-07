@@ -1,14 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_db
-from app.models.route import Route
-from app.schemas.route import RouteResponse
-from sqlalchemy import select
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1 import routes
+from app.core.config import settings
+from app.db.base import Base
+from app.db.session import engine
 
-router = APIRouter()
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
-@router.get("/", response_model=List[RouteResponse])
-async def get_routes(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Route))
-    routes = result.scalars().all()
-    return routes
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def on_startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+app.include_router(routes.router, prefix=f"{settings.API_V1_PREFIX}/routes", tags=["routes"])
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "routing"}
