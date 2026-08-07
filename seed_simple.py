@@ -10,6 +10,7 @@ sys.path.insert(0, '/app')
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from datetime import datetime, timedelta
 
 # Get DATABASE_URL from environment
@@ -45,9 +46,9 @@ async def seed_data():
             # Insert vehicles
             for v in SAMPLE_VEHICLES:
                 await session.execute(
-                    """INSERT INTO vehicles (plate_number, capacity, cod_limit, is_active, hub_id)
+                    text("""INSERT INTO vehicles (plate_number, capacity, cod_limit, is_active, hub_id)
                        VALUES (:plate, :capacity, :cod_limit, true, 1)
-                       ON CONFLICT (plate_number) DO NOTHING""",
+                       ON CONFLICT (plate_number) DO NOTHING"""),
                     {"plate": v["plate"], "capacity": v["capacity"], "cod_limit": v["cod_limit"]}
                 )
             
@@ -57,9 +58,9 @@ async def seed_data():
                 tw_end = datetime.now() + timedelta(hours=8)
                 
                 await session.execute(
-                    """INSERT INTO stops (address, lat, lon, cod_amount, time_window_start, 
+                    text("""INSERT INTO stops (address, lat, lon, cod_amount, time_window_start, 
                                           time_window_end, is_completed, hub_id)
-                       VALUES (:address, :lat, :lon, :cod, :tw_start, :tw_end, false, 1)""",
+                       VALUES (:address, :lat, :lon, :cod, :tw_start, :tw_end, false, 1)"""),
                     {
                         "address": s["address"], 
                         "lat": s["lat"], 
@@ -71,12 +72,14 @@ async def seed_data():
                 )
             
             await session.commit()
-            print(f" Data seeded successfully!")
+            print(f"✅ Data seeded successfully!")
             print(f"   - {len(SAMPLE_VEHICLES)} vehicles added")
             print(f"   - {len(SAMPLE_STOPS)} stops added")
             
         except Exception as e:
-            print(f" Error: {e}")
+            print(f"❌ Error: {e}")
+            import traceback
+            traceback.print_exc()
             await session.rollback()
         finally:
             await engine.dispose()
