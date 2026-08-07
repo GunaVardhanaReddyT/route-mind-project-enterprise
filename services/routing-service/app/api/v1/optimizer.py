@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 optimizer = RouteOptimizer(redis_url=settings.REDIS_URL)
-bedrock = BedrockClient(region=settings.AWS_REGION, access_key=settings.AWS_ACCESS_KEY_ID,
-                        secret_key=settings.AWS_SECRET_ACCESS_KEY, model_id=settings.BEDROCK_MODEL_ID)
+bedrock = BedrockClient(settings.AWS_REGION, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY, settings.BEDROCK_MODEL_ID)
 
 
 @router.post("/optimize")
