@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 
 class StopBase(BaseModel):
@@ -32,3 +33,14 @@ class RouteResponse(RouteBase):
 
     class Config:
         from_attributes = True
+
+
+class OptimizationResult(BaseModel):
+    routes: List[Dict[str, Any]]
+    total_distance_km: float
+    solve_time_ms: int
+    constraints_applied: List[str]
+    explanation: Optional[str]
+    ai_cost_usd: float
+    status: str
+    changes: Optional[Dict[str, Any]] = None

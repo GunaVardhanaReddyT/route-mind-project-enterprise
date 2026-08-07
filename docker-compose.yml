@@ -53,5 +53,17 @@ services:
     ports:
       - "8002:8000"
 
+  ai-service:
+    build: ./services/ai-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - routing-service
+    ports:
+      - "8003:8000"
+
 volumes:
   pgdata:
