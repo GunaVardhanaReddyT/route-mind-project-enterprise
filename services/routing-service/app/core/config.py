@@ -10,13 +10,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
     AWS_REGION: str = "us-east-2"
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
+    AWS_ACCESS_KEY_ID: Optional[str] = None
+    AWS_SECRET_ACCESS_KEY: Optional[str] = None
+    BEDROCK_API_KEY: Optional[str] = None
 
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
-    # Bedrock Model Config (Optional - has defaults)
     BEDROCK_MODEL_ID: str = "moonshotai.kimi-k2.5"
 
     class Config:

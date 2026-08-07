@@ -10,4 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Copy seed script to accessible location
+COPY seed_simple.py /app/seed_simple.py
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

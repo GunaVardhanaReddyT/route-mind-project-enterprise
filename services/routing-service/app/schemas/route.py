@@ -29,7 +29,6 @@ class RouteCreate(RouteBase):
 
 class RouteResponse(RouteBase):
     id: int
-    stops: List[int]
 
     class Config:
         from_attributes = True

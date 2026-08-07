@@ -30,32 +30,38 @@ SAMPLE_VEHICLES = [
 
 
 async def seed_data():
+    # Use the docker-compose database connection
     conn = await asyncpg.connect(
-        "postgresql+asyncpg://routemind:RouteMind2024SecurePass@localhost:5432/routemind_db"
+        "postgresql://routemind:secure_password_change_me@localhost:5432/routemind_db"
     )
 
-    # Insert vehicles
-    for i, v in enumerate(SAMPLE_VEHICLES, start=1):
-        await conn.execute(
-            """INSERT INTO vehicles (plate_number, type, capacity, cod_limit, is_active, hub_id)
-               VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (plate_number) DO NOTHING""",
-            v["plate"], v["type"], v["capacity"], v["cod_limit"], True, 1
-        )
+    try:
+        # Insert vehicles
+        for i, v in enumerate(SAMPLE_VEHICLES, start=1):
+            await conn.execute(
+                """INSERT INTO vehicles (plate_number, capacity, cod_limit, is_active, hub_id)
+                   VALUES ($1, $2, $3, $4, $5) ON CONFLICT (plate_number) DO NOTHING""",
+                v["plate"], v["capacity"], v["cod_limit"], True, 1
+            )
 
-    # Insert stops
-    for i, s in enumerate(SAMPLE_STOPS, start=1):
-        tw_start = datetime.now() + timedelta(hours=1)
-        tw_end = datetime.now() + timedelta(hours=8)
+        # Insert stops
+        for i, s in enumerate(SAMPLE_STOPS, start=1):
+            tw_start = datetime.now() + timedelta(hours=1)
+            tw_end = datetime.now() + timedelta(hours=8)
 
-        await conn.execute(
-            """INSERT INTO stops (address, lat, lon, cod_amount, time_window_start, time_window_end, is_completed,
-                                  hub_id)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING""",
-            s["address"], s["lat"], s["lon"], s["cod"], tw_start, tw_end, False, 1
-        )
+            await conn.execute(
+                """INSERT INTO stops (address, lat, lon, cod_amount, time_window_start, time_window_end, is_completed,
+                                      hub_id)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                s["address"], s["lat"], s["lon"], s["cod"], tw_start, tw_end, False, 1
+            )
 
-    print("✅ Data seeded successfully!")
-    await conn.close()
+        print("✅ Data seeded successfully!")
+        print(f"   - {len(SAMPLE_VEHICLES)} vehicles added")
+        print(f"   - {len(SAMPLE_STOPS)} stops added")
+        
+    finally:
+        await conn.close()
 
 
 if __name__ == "__main__":
