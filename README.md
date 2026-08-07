@@ -1,7 +1,7 @@
 # RouteMind
 ## Production-Ready Route Optimization Platform for Indian Logistics
 
-Built for AI Build 2026 Hackathon by Team RouteMind.
+Built for AI Build 2026 Hackathon by Team route-club(T080).
 
 ## Overview
 
@@ -304,7 +304,7 @@ Based on test data (10 stops, 3 vehicles):
 
 ## Team
 
-Team RouteMind - AI Build 2026
+Team route-club(T080) - AI Build 2026
 
 ## License
 
