@@ -5,6 +5,9 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 
+# CRITICAL: Import all models before creating tables
+from app.models import vehicle, stop, route
+
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
 app.add_middleware(

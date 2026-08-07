@@ -5,7 +5,7 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
     id = Column(Integer, primary_key=True, index=True)
     plate_number = Column(String, unique=True, nullable=False)
-    capacity = Column(Integer, default=100) # Packages
-    cod_limit = Column(Float, default=50000.0) # INR
+    capacity = Column(Integer, default=100)
+    cod_limit = Column(Float, default=50000.0)
     is_active = Column(Boolean, default=True)
     hub_id = Column(Integer, nullable=False)

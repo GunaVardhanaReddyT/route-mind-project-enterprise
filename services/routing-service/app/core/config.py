@@ -8,9 +8,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
     REDIS_URL: str
-    AWS_REGION: str = "ap-south-1"
+    AWS_REGION: str = "us-east-2"
 
-    # Security (To verify JWT from Auth Service)
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
