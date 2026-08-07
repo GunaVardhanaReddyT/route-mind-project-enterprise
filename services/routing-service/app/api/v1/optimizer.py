@@ -108,14 +108,41 @@ async def replan_route(
         new_stop_id: Optional[int] = None,
         failed_stop_id: Optional[int] = None,
         reason: str = "traffic",
+        hub_id: int = 1,
         db: AsyncSession = Depends(get_db)
 ):
+    """Re-plan routes when a stop fails or new pickup is added"""
+    
+    # Fetch current vehicles and stops
+    vehicles_result = await db.execute(select(Vehicle).where(Vehicle.hub_id == hub_id, Vehicle.is_active == True))
+    vehicles = [{"id": v.id, "plate_number": v.plate_number} for v in vehicles_result.scalars().all()]
+
+    # Fetch all stops
+    stops_result = await db.execute(select(Stop).where(Stop.hub_id == hub_id))
+    all_stops = [{"id": s.id, "lat": s.lat, "lon": s.lon, "cod_amount": s.cod_amount} 
+                 for s in stops_result.scalars().all()]
+
+    # Get new stop if provided
+    new_stop = None
+    if new_stop_id:
+        new_stop_result = await db.execute(select(Stop).where(Stop.id == new_stop_id))
+        stop_obj = new_stop_result.scalar_one_or_none()
+        if stop_obj:
+            new_stop = {"id": stop_obj.id, "lat": stop_obj.lat, "lon": stop_obj.lon, "cod_amount": stop_obj.cod_amount}
+
+    if not vehicles:
+        raise HTTPException(status_code=400, detail="No active vehicles")
+
+    # Re-solve
     from app.solver.engine import RouteOptimizer
     optimizer = RouteOptimizer(redis_url=settings.REDIS_URL)
-
+    
     replan_result = optimizer.replan_route(
         existing_routes=[],
-        new_stop=None,
+        depot=(28.6139, 77.2090),
+        all_stops=all_stops,
+        vehicles=vehicles,
+        new_stop=new_stop,
         failed_stop_id=failed_stop_id,
         reason=reason
     )

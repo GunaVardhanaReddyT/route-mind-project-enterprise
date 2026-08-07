@@ -30,19 +30,26 @@ Provide a 2-3 sentence explanation about efficiency and constraints respected.
 Keep it professional and concise."""
 
         try:
+            # Kimi K2.5 uses OpenAI-compatible format (NOT Anthropic)
             response = self.client.invoke_model(
                 modelId=self.model_id,
                 contentType="application/json",
                 accept="application/json",
                 body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
+                    "messages": [{"role": "user", "content": prompt}],
                     "max_tokens": 300,
-                    "messages": [{"role": "user", "content": prompt}]
+                    "temperature": 0.7
                 })
             )
 
             result = json.loads(response["body"].read())
-            return result["content"][0]["text"]
+            # Kimi K2.5 returns OpenAI-style response
+            explanation = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            if not explanation:
+                explanation = "Routes optimized using OR-Tools with Indian constraints (COD, Zone Timing, Odd-Even)."
+            
+            return explanation
 
         except Exception as e:
             logger.error(f"Bedrock call failed: {e}")
@@ -80,19 +87,23 @@ async def explain_change(
     client = BedrockClient()
 
     try:
+        # Kimi K2.5 uses OpenAI-compatible format (NOT Anthropic)
         response = client.client.invoke_model(
             modelId=client.model_id,
             contentType="application/json",
             accept="application/json",
             body=json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
+                "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 200,
-                "messages": [{"role": "user", "content": prompt}]
+                "temperature": 0.7
             })
         )
 
         result = json.loads(response["body"].read())
-        explanation = result["content"][0]["text"]
+        explanation = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+        
+        if not explanation:
+            explanation = f"Route re-planned due to {reason}. Driver notified."
 
         return {
             "route_id": route_id,

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class BedrockClient:
-    """AWS Bedrock client for LLM explanations"""
+    """AWS Bedrock client for LLM explanations using Kimi K2.5"""
 
     def __init__(self):
         self.client = boto3.client(
@@ -17,7 +17,7 @@ class BedrockClient:
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
         )
-        self.model_id = "moonshotai.kimi-k2.5"
+        self.model_id = settings.BEDROCK_MODEL_ID  # "moonshotai.kimi-k2.5"
         self.total_cost = 0.0
 
     async def generate_explanation(
@@ -27,43 +27,49 @@ class BedrockClient:
             stops: List[Dict],
             vehicles: List[Dict]
     ) -> Dict:
-        """Generate AI explanation for route optimization"""
+        """Generate AI explanation for route optimization using Kimi K2.5"""
 
+        total_distance = sum(r.get("distance_km", 0) for r in new_routes)
+        
         prompt = f"""You are a logistics supervisor assistant. Explain the route optimization results.
 
 CONTEXT:
 - Total routes generated: {len(new_routes)}
+- Total distance: {total_distance:.2f} km
 - Constraints applied: COD Limit (₹50k), Zone Timing, Odd-Even Plate
 
-OPTIMIZATION SUMMARY:
-{json.dumps(new_routes, indent=2)}
-
-Provide a 2-3 sentence explanation for the supervisor about:
+Provide a 2-3 sentence professional explanation about:
 1. How routes were optimized
 2. Which Indian constraints were respected
-3. Estimated efficiency gain
+3. Efficiency achieved
 
 Keep it professional and concise."""
 
         try:
+            # Kimi K2.5 uses OpenAI-compatible format (NOT Anthropic)
             response = self.client.invoke_model(
                 modelId=self.model_id,
                 contentType="application/json",
                 accept="application/json",
                 body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ],
                     "max_tokens": 300,
-                    "messages": [{"role": "user", "content": prompt}]
+                    "temperature": 0.7
                 })
             )
 
             result = json.loads(response["body"].read())
-            explanation = result["content"][0]["text"]
+            
+            # Kimi K2.5 returns OpenAI-style response
+            explanation = result.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-            # Calculate cost (Haiku: $0.00025/1K input, $0.00125/1K output)
-            input_tokens = len(prompt) / 4
-            output_tokens = len(explanation) / 4
-            cost = (input_tokens * 0.00025 / 1000) + (output_tokens * 0.00125 / 1000)
+            if not explanation:
+                explanation = "Routes optimized using OR-Tools with Indian constraints (COD ₹50k, Zone Timing, Odd-Even)."
+
+            # Approximate cost for Kimi K2.5
+            cost = 0.001
             self.total_cost += cost
 
             return {"explanation": explanation, "cost": cost}
@@ -82,7 +88,7 @@ Keep it professional and concise."""
             failed_stop_id: Optional[int],
             reason: str
     ) -> Dict:
-        """Generate explanation for route change"""
+        """Generate explanation for route change using Kimi K2.5"""
 
         change_type = "new pickup" if new_stop else "failed delivery"
 
@@ -106,16 +112,21 @@ Be clear and actionable."""
                 contentType="application/json",
                 accept="application/json",
                 body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ],
                     "max_tokens": 200,
-                    "messages": [{"role": "user", "content": prompt}]
+                    "temperature": 0.7
                 })
             )
 
             result = json.loads(response["body"].read())
-            explanation = result["content"][0]["text"]
+            explanation = result.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-            cost = 0.001  # Approximate cost
+            if not explanation:
+                explanation = f"Route re-planned due to {reason}. Driver notified of changes."
+
+            cost = 0.001
             self.total_cost += cost
 
             return {"explanation": explanation, "cost": cost}

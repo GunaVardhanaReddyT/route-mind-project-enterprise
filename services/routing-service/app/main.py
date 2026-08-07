@@ -25,6 +25,7 @@ async def on_startup():
         await conn.run_sync(Base.metadata.create_all)
 
 app.include_router(optimizer.router, prefix=f"{settings.API_V1_PREFIX}/optimizer", tags=["optimizer"])
+app.include_router(routes.router, prefix=f"{settings.API_V1_PREFIX}/routes", tags=["routes"])
 
 @app.get("/health")
 async def health():

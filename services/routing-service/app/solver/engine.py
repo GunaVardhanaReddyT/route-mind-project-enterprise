@@ -57,8 +57,27 @@ class RouteOptimizer:
         transit_callback_index = routing.RegisterTransitCallback(distance_callback)
         routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
+        # Add COD capacity constraint
+        def cod_callback(from_index):
+            from_node = manager.IndexToNode(from_index)
+            if from_node == 0:  # depot
+                return 0
+            return int(stops[from_node - 1].get("cod_amount", 0))
+
+        cod_callback_index = routing.RegisterUnaryTransitCallback(cod_callback)
+        
+        # COD limit: ₹50,000 per vehicle
+        routing.AddDimensionWithVehicleCapacity(
+            cod_callback_index,
+            0,  # null capacity slack
+            [50000] * n_vehicles,  # vehicle maximum capacities
+            True,  # start cumul to zero
+            "COD"
+        )
+
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+        search_parameters.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
         search_parameters.time_limit.FromSeconds(time_limit_seconds)
 
         solution = routing.SolveWithParameters(search_parameters)
@@ -73,24 +92,63 @@ class RouteOptimizer:
 
         for vehicle_idx in range(n_vehicles):
             route_stops = []
+            route_distance = 0
             index = routing.Start(vehicle_idx)
+            previous_index = index
+            
             while not routing.IsEnd(index):
                 node = manager.IndexToNode(index)
                 if node != 0:
                     route_stops.append(node - 1)
+                
+                # Calculate distance for this segment
+                previous_index = index
                 index = solution.Value(routing.NextVar(index))
+                route_distance += routing.GetArcCostForVehicle(previous_index, index, vehicle_idx)
 
             if route_stops:
-                routes.append({"vehicle_id": vehicles[vehicle_idx].get("id"), "stop_indices": route_stops,
-                               "num_stops": len(route_stops)})
+                routes.append({
+                    "vehicle_id": vehicles[vehicle_idx].get("id"), 
+                    "stop_indices": route_stops,
+                    "num_stops": len(route_stops),
+                    "distance_km": round(route_distance / 1000, 2)
+                })
+                total_distance += route_distance
 
-        return {"routes": routes, "total_distance_km": round(total_distance / 100, 2), "solve_time_ms": solve_time_ms,
+        return {"routes": routes, "total_distance_km": round(total_distance / 1000, 2), "solve_time_ms": solve_time_ms,
                 "status": "success", "constraints_applied": ["cod_limit", "zone_timing", "odd_even"]}
 
-    def replan_route(self, existing_routes: List[Dict], new_stop: Optional[Dict] = None,
+    def replan_route(self, existing_routes: List[Dict], depot: Tuple[float, float], 
+                     all_stops: List[Dict], vehicles: List[Dict],
+                     new_stop: Optional[Dict] = None,
                      failed_stop_id: Optional[int] = None, reason: str = "traffic") -> Dict:
+        """Re-plan routes when a new stop is added or a stop fails"""
         start_time = time.time()
-        changes = {"new_stop_added": new_stop is not None, "failed_stop_removed": failed_stop_id is not None,
-                   "reason": reason}
+        
+        # Filter out failed stop
+        active_stops = [s for s in all_stops if s["id"] != failed_stop_id] if failed_stop_id else all_stops
+        
+        # Add new stop if provided
+        if new_stop:
+            active_stops.append(new_stop)
+        
+        # Re-solve with updated stops
+        solution = self.solve_vrp(depot, active_stops, vehicles, time_limit_seconds=25)
+        
+        changes = {
+            "new_stop_added": new_stop is not None,
+            "new_stop_id": new_stop.get("id") if new_stop else None,
+            "failed_stop_removed": failed_stop_id is not None,
+            "failed_stop_id": failed_stop_id,
+            "reason": reason,
+            "affected_routes": len(solution.get("routes", []))
+        }
+        
         solve_time_ms = int((time.time() - start_time) * 1000)
-        return {"status": "replanned", "solve_time_ms": solve_time_ms, "changes": changes, "routes": existing_routes}
+        
+        return {
+            **solution,
+            "status": "replanned",
+            "solve_time_ms": solve_time_ms,
+            "changes": changes
+        }
