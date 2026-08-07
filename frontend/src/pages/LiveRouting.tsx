@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
+import { useState, useRef, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMapEvents } from 'react-leaflet'
 import { Button } from '../components/ui/Button'
 import api from '../lib/api'
 import 'leaflet/dist/leaflet.css'
@@ -26,6 +26,15 @@ interface Stop {
   priority: string
 }
 
+function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click: (e) => {
+      onMapClick(e.latlng.lat, e.latlng.lng)
+    },
+  })
+  return null
+}
+
 export function LiveRouting() {
   const [hubId, setHubId] = useState(1)
   const [inputStops, setInputStops] = useState<Stop[]>([])
@@ -37,8 +46,7 @@ export function LiveRouting() {
   const selectedHub = HUBS.find(h => h.id === hubId) || HUBS[0]
   
   // Add stop by clicking on input map
-  const handleInputMapClick = (e: any) => {
-    const { lat, lng } = e.latlng
+  const handleInputMapClick = (lat: number, lng: number) => {
     setInputStops([
       ...inputStops,
       {
@@ -174,11 +182,9 @@ export function LiveRouting() {
               center={[selectedHub.lat, selectedHub.lon]}
               zoom={11}
               style={{ height: '100%', width: '100%' }}
-              eventHandlers={{
-                click: handleInputMapClick
-              }}
             >
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <MapClickHandler onMapClick={handleInputMapClick} />
               
               {/* Depot */}
               <Marker position={[selectedHub.lat, selectedHub.lon]}>

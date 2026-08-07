@@ -23,37 +23,7 @@ interface RouteMapProps {
   selectedRouteId?: number
 }
 
-export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapProps) {
-  const map = useMap()
-
-  useEffect(() => {
-    if (depot && map) {
-      // Center map on the depot location
-      map.setView([depot.lat, depot.lon], 12)
-    }
-  }, [depot, map])
-
-  useEffect(() => {
-    if (depot && routes && routes.length > 0 && map) {
-      const bounds = L.latLngBounds([])
-      bounds.extend([depot.lat, depot.lon])
-      
-      routes.forEach(route => {
-        route.stops.forEach((stop: any) => {
-          bounds.extend([stop.lat, stop.lon])
-        })
-      })
-      
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [50, 50] })
-      }
-    }
-  }, [depot, routes, map])
-
-  return null
-}
-
-export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapProps) {
+export default function RouteMap({ depot, routes }: RouteMapProps) {
   const defaultCenter: [number, number] = depot ? [depot.lat, depot.lon] : [20.5937, 78.9629]
   const defaultZoom = depot ? 12 : 5
 
@@ -99,8 +69,7 @@ export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapPro
       )}
 
       {routes && routes.map((route) => {
-        const isSelected = selectedRouteId === route.route_id
-        const opacity = selectedRouteId === undefined || isSelected ? 1 : 0.3
+        const opacity = 1
         
         return (
           <div key={route.route_id}>
@@ -124,7 +93,7 @@ export default function RouteMap({ depot, routes, selectedRouteId }: RouteMapPro
                   [depot.lat, depot.lon]
                 ]}
                 color={route.color}
-                weight={isSelected ? 4 : 3}
+                weight={3}
                 opacity={opacity}
               />
             )}
