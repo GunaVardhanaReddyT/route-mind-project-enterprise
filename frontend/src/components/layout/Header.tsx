@@ -19,7 +19,7 @@ export default function Header({ darkMode, onToggleDarkMode, onLogout }: HeaderP
   const loadHubs = async () => {
     try {
       const data = await getHubs()
-      setHubs(data)
+      setHubs(data.hubs || data)
     } catch (err) {
       // Use fallback hubs
       setHubs([
