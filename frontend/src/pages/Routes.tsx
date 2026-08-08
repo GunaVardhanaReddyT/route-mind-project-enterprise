@@ -65,12 +65,6 @@ export default function Routes() {
       return
     }
 
-    // Check if non-Delhi hub selected
-    if (hubId !== 1) {
-      alert('The Routes page only has pre-seeded delivery stops for Delhi Hub.\n\nFor Mumbai and Bangalore, please use the "Live Routing" page where you can add stops manually.')
-      return
-    }
-
     setLoading(true)
     try {
       const data = await optimizeRoutes(hubId)
