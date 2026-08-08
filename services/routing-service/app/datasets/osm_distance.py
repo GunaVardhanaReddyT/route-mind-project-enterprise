@@ -100,6 +100,10 @@ class OSRMDistanceCalculator:
         
         return distance_matrix
     
+    def calculate_distance_matrix(self, locations: List[Tuple[float, float]]) -> List[List[int]]:
+        """Alias for get_distance_matrix for compatibility"""
+        return self.get_distance_matrix(locations)
+    
     @staticmethod
     def get_route(start: Tuple[float, float], end: Tuple[float, float]) -> Optional[Dict]:
         """

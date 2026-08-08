@@ -1,4 +1,4 @@
-import { LayoutDashboard, MapPin, Settings, Trophy, Zap } from 'lucide-react'
+import { LayoutDashboard, MapPin, Settings, Zap } from 'lucide-react'
 
 interface SidebarProps {
   currentPage: string
