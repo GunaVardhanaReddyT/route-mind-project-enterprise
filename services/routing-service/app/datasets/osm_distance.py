@@ -109,7 +109,7 @@ class OSRMDistanceCalculator:
         """
         Get detailed route between two points
         
-        Returns route geometry, distance, duration
+        Returns route coordinates, distance, duration
         """
         try:
             url = f"http://router.project-osrm.org/route/v1/driving/{start[1]},{start[0]};{end[1]},{end[0]}"
@@ -124,7 +124,7 @@ class OSRMDistanceCalculator:
                     return {
                         "distance_m": route["distance"],
                         "duration_s": route["duration"],
-                        "geometry": route["geometry"]
+                        "coordinates": route["geometry"]["coordinates"]  # Extract coordinates from GeoJSON
                     }
             
             return None
