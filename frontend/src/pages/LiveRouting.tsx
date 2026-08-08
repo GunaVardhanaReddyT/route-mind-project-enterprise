@@ -141,6 +141,26 @@ export function LiveRouting() {
         generate_alternatives: 3,
         use_ai_explanation: true
       })
+      
+      // Filter duplicate alternatives (check if routes are actually different)
+      const alternatives = response.data.alternatives || []
+      const uniqueAlternatives: any[] = []
+      const seenRoutes = new Set<string>()
+      
+      for (const alt of alternatives) {
+        // Create a signature of the route (stop sequence)
+        const routeSignature = alt.routes
+          .map((r: any) => r.stops.map((s: any) => `${s.lat.toFixed(4)},${s.lon.toFixed(4)}`).join('|'))
+          .join('||')
+        
+        if (!seenRoutes.has(routeSignature)) {
+          seenRoutes.add(routeSignature)
+          uniqueAlternatives.push(alt)
+        }
+      }
+      
+      // Update result with filtered alternatives
+      response.data.alternatives = uniqueAlternatives
       setResult(response.data)
       setSelectedAlt(0)
     } catch (err: any) {
@@ -150,6 +170,7 @@ export function LiveRouting() {
     }
   }
   
+  // Get current selected alternative
   const currentAlt = result?.alternatives?.[selectedAlt]
   
   return (
@@ -310,6 +331,7 @@ export function LiveRouting() {
           <div className="h-96 rounded-lg overflow-hidden border">
             {result ? (
               <MapContainer
+                key={`output-map-${selectedAlt}`}
                 center={[selectedHub.lat, selectedHub.lon]}
                 zoom={11}
                 style={{ height: '100%', width: '100%' }}
