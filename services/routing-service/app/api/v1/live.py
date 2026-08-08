@@ -150,11 +150,21 @@ async def optimize_live_routes(request: LiveRouteRequest):
         
         # Rank by total distance
         all_routes.sort(key=lambda x: x["solution"]["total_distance_km"])
-        best_route = all_routes[0]
         
-        # Build visualization with REAL road paths for ALL alternatives
+        # Filter out duplicate solutions (same total distance)
+        unique_routes = []
+        seen_distances = set()
+        for route_set in all_routes:
+            distance = route_set["solution"]["total_distance_km"]
+            if distance not in seen_distances:
+                unique_routes.append(route_set)
+                seen_distances.add(distance)
+        
+        best_route = unique_routes[0] if unique_routes else all_routes[0]
+        
+        # Build visualization with REAL road paths for unique alternatives only
         alternatives_viz = []
-        for idx, route_set in enumerate(all_routes[:request.generate_alternatives]):
+        for idx, route_set in enumerate(unique_routes[:request.generate_alternatives]):
             solution = route_set["solution"]
             routes_viz = []
             
