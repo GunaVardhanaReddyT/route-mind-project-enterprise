@@ -1,7 +1,9 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: `http://${window.location.hostname}:8002/api/v1`,
+  baseURL: window.location.hostname === 'localhost' 
+    ? 'http://localhost:8002/api/v1'
+    : `http://${window.location.hostname}:8002/api/v1`,
   timeout: 30000,
 })
 
