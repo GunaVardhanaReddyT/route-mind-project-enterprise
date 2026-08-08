@@ -46,6 +46,7 @@ export function LiveRouting() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searching, setSearching] = useState(false)
+  const [addedMessage, setAddedMessage] = useState('')
   
   const selectedHub = HUBS.find(h => h.id === hubId) || HUBS[0]
   
@@ -69,17 +70,22 @@ export function LiveRouting() {
   
   // Add location from search result
   const addFromSearch = (result: any) => {
+    const locationName = result.display_name.split(',')[0]
     setInputStops([
       ...inputStops,
       {
         lat: parseFloat(result.lat),
         lon: parseFloat(result.lon),
-        address: result.display_name.split(',')[0],
+        address: locationName,
         priority: 'medium'
       }
     ])
     setSearchQuery('')
     setSearchResults([])
+    
+    // Show success message
+    setAddedMessage(`✓ Added: ${locationName}`)
+    setTimeout(() => setAddedMessage(''), 3000)
   }
   
   // Add stop by clicking on input map
@@ -178,6 +184,13 @@ export function LiveRouting() {
               {searching ? 'Searching...' : 'Search'}
             </button>
           </div>
+          
+          {/* Success Message */}
+          {addedMessage && (
+            <div className="mt-2 px-3 py-2 bg-green-100 text-green-800 rounded border border-green-300">
+              {addedMessage}
+            </div>
+          )}
           
           {/* Search Results */}
           {searchResults.length > 0 && (

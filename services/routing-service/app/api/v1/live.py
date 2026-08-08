@@ -153,8 +153,6 @@ async def optimize_live_routes(request: LiveRouteRequest):
         best_route = all_routes[0]
         
         # Build visualization with REAL road paths for ALL alternatives
-        route_colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444']
-        
         alternatives_viz = []
         for idx, route_set in enumerate(all_routes[:request.generate_alternatives]):
             solution = route_set["solution"]
@@ -201,7 +199,7 @@ async def optimize_live_routes(request: LiveRouteRequest):
                         for s in route_stops
                     ],
                     "distance_km": route["distance_km"],
-                    "color": route_colors[route_idx % len(route_colors)],
+                    "color": '#10b981' if idx == 0 else '#ef4444',  # Green for best, red for others
                     "road_path": road_path
                 })
             

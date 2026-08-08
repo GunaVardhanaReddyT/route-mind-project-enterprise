@@ -16,12 +16,26 @@ from app.api.v1 import metrics
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# Hub depot coordinates
+HUB_DEPOTS = {
+    1: {"lat": 28.6139, "lon": 77.2090, "name": "Delhi Hub"},
+    2: {"lat": 19.0760, "lon": 72.8777, "name": "Mumbai Hub"},
+    3: {"lat": 12.9716, "lon": 77.5946, "name": "Bangalore Hub"},
+}
+
 
 @router.post("/optimize")
 async def optimize_routes(hub_id: int = 1, use_ai_explanation: bool = True, db: AsyncSession = Depends(get_db)):
+    # Get hub coordinates
+    if hub_id not in HUB_DEPOTS:
+        raise HTTPException(status_code=400, detail=f"Invalid hub_id. Use 1 (Delhi), 2 (Mumbai), or 3 (Bangalore)")
+    
+    depot_info = HUB_DEPOTS[hub_id]
+    depot = (depot_info["lat"], depot_info["lon"])
+    
     # Fetch vehicles
     vehicles_result = await db.execute(select(Vehicle).where(Vehicle.hub_id == hub_id, Vehicle.is_active == True))
-    vehicles = [{"id": v.id, "plate_number": v.plate_number, "lat": 28.6139, "lon": 77.2090} for v in
+    vehicles = [{"id": v.id, "plate_number": v.plate_number, "lat": depot[0], "lon": depot[1]} for v in
                 vehicles_result.scalars().all()]
 
     # Fetch stops
@@ -36,7 +50,7 @@ async def optimize_routes(hub_id: int = 1, use_ai_explanation: bool = True, db: 
     # OR-Tools solve
     from app.solver.engine import RouteOptimizer
     optimizer = RouteOptimizer(redis_url=settings.REDIS_URL)
-    solution = optimizer.solve_vrp(depot=(28.6139, 77.2090), stops=stops, vehicles=vehicles)
+    solution = optimizer.solve_vrp(depot=depot, stops=stops, vehicles=vehicles)
 
     # Generate AI explanation using Kimi K2
     explanation = None
@@ -158,7 +172,7 @@ Keep it professional and concise."""
     
     # Add visualization data for presentation
     visualization = {
-        "depot": {"lat": 28.6139, "lon": 77.2090, "label": "Delhi Hub"},
+        "depot": {"lat": depot[0], "lon": depot[1], "label": depot_info["name"]},
         "routes": []
     }
     
@@ -193,6 +207,13 @@ async def replan_route(
 ):
     """Re-plan routes when a stop fails or new pickup is added"""
     
+    # Get hub coordinates
+    if hub_id not in HUB_DEPOTS:
+        raise HTTPException(status_code=400, detail=f"Invalid hub_id")
+    
+    depot_info = HUB_DEPOTS[hub_id]
+    depot = (depot_info["lat"], depot_info["lon"])
+    
     # Fetch current vehicles and stops
     vehicles_result = await db.execute(select(Vehicle).where(Vehicle.hub_id == hub_id, Vehicle.is_active == True))
     vehicles = [{"id": v.id, "plate_number": v.plate_number} for v in vehicles_result.scalars().all()]
@@ -219,7 +240,7 @@ async def replan_route(
     
     replan_result = optimizer.replan_route(
         existing_routes=[],
-        depot=(28.6139, 77.2090),
+        depot=depot,
         all_stops=all_stops,
         vehicles=vehicles,
         new_stop=new_stop,

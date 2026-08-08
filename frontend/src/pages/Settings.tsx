@@ -36,21 +36,12 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Amazon Last Mile Dataset</p>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">OpenStreetMap / OSRM</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Real-world routing data structure (6,000+ routes, 1M+ stops)
+              Real road network distances for accurate routing
             </p>
             <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 mt-2">
               Active
-            </span>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">OpenStreetMap / OSRM</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Real road network distances (optional enhancement)
-            </p>
-            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 mt-2">
-              Available
             </span>
           </div>
         </CardContent>
