@@ -105,7 +105,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-slate-600 dark:text-slate-400">Cost per Route</span>
               <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {formatCurrency(metrics.business_impact.cost_per_route_usd, 'USD')}
+                ${metrics.business_impact.cost_per_route_usd.toFixed(4)}
               </span>
             </div>
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800">

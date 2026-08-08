@@ -174,7 +174,7 @@ export default function Routes() {
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 dark:text-slate-400">AI Cost</span>
                     <span className="text-slate-700 dark:text-slate-300">
-                      {formatCurrency(result.ai_cost_usd, 'USD')}
+                      ${result.ai_cost_usd.toFixed(4)}
                     </span>
                   </div>
                 )}
