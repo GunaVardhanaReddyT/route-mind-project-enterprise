@@ -5,15 +5,14 @@ import Header from './components/layout/Header'
 import Dashboard from './pages/Dashboard'
 import Routes from './pages/Routes'
 import Settings from './pages/Settings'
-import { AmazonChallenge } from './pages/AmazonChallenge'
 import { LiveRouting } from './pages/LiveRouting'
 import Login from './pages/Login'
 import { Menu, X } from 'lucide-react'
 
-type Page = 'dashboard' | 'routes' | 'settings' | 'amazon' | 'live'
+type Page = 'dashboard' | 'routes' | 'settings' | 'live'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard')
+  const [currentPage, setCurrentPage] = useState<Page>('live')
   const [darkMode, setDarkMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -46,18 +45,16 @@ function App() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'live':
+        return <LiveRouting />
       case 'dashboard':
         return <Dashboard />
       case 'routes':
         return <Routes />
       case 'settings':
         return <Settings />
-      case 'amazon':
-        return <AmazonChallenge />
-      case 'live':
-        return <LiveRouting />
       default:
-        return <Dashboard />
+        return <LiveRouting />
     }
   }
 

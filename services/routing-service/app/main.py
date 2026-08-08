@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import optimizer, routes, metrics, hubs
+from app.api.v1 import optimizer, routes, metrics, hubs, live
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.base import Base
@@ -24,6 +24,7 @@ async def on_startup():
         await conn.run_sync(Base.metadata.create_all)
 
 # Core routing endpoints
+app.include_router(live.router, prefix=f"{settings.API_V1_PREFIX}", tags=["live"])
 app.include_router(optimizer.router, prefix=f"{settings.API_V1_PREFIX}/optimizer", tags=["optimizer"])
 app.include_router(routes.router, prefix=f"{settings.API_V1_PREFIX}/routes", tags=["routes"])
 app.include_router(metrics.router, prefix=f"{settings.API_V1_PREFIX}", tags=["metrics"])
