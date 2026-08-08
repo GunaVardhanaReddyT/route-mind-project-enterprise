@@ -7,7 +7,7 @@ Optional enhancement: Replace Haversine with actual road network distances
 
 import logging
 import requests
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict
 import time
 
 logger = logging.getLogger(__name__)
