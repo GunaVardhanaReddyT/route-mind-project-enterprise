@@ -5,7 +5,7 @@ Uses OSM for actual road paths, AI for dynamic decisions
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.db.session import get_db
+from app.db.session import get_session as get_db
 from app.db.base import Stop, Vehicle
 from app.core.hub_config import get_depot_coords, get_depot_info
 from app.datasets.osm_distance import OSRMDistanceCalculator
