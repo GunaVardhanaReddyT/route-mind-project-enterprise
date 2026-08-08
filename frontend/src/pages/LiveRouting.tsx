@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMapEvents } from 'react-leaflet'
 import { Button } from '../components/ui/Button'
+import { Search } from 'lucide-react'
 import api from '../lib/api'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -42,8 +43,44 @@ export function LiveRouting() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [selectedAlt, setSelectedAlt] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searching, setSearching] = useState(false)
   
   const selectedHub = HUBS.find(h => h.id === hubId) || HUBS[0]
+  
+  // Search for location using Nominatim
+  const searchLocation = async () => {
+    if (!searchQuery.trim()) return
+    
+    setSearching(true)
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}, India&limit=5`
+      )
+      const data = await response.json()
+      setSearchResults(data)
+    } catch (err) {
+      console.error('Search failed:', err)
+    } finally {
+      setSearching(false)
+    }
+  }
+  
+  // Add location from search result
+  const addFromSearch = (result: any) => {
+    setInputStops([
+      ...inputStops,
+      {
+        lat: parseFloat(result.lat),
+        lon: parseFloat(result.lon),
+        address: result.display_name.split(',')[0],
+        priority: 'medium'
+      }
+    ])
+    setSearchQuery('')
+    setSearchResults([])
+  }
   
   // Add stop by clicking on input map
   const handleInputMapClick = (lat: number, lng: number) => {
@@ -120,6 +157,45 @@ export function LiveRouting() {
       
       {/* Controls */}
       <div className="bg-white p-4 rounded-lg shadow space-y-4">
+        {/* Location Search */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Search Location in India</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchLocation()}
+              placeholder="Search for a location (e.g., Connaught Place, Delhi)"
+              className="flex-1 border rounded px-3 py-2"
+            />
+            <button
+              onClick={searchLocation}
+              disabled={searching || !searchQuery.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <Search className="h-4 w-4" />
+              {searching ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+          
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="mt-2 border rounded max-h-48 overflow-y-auto">
+              {searchResults.map((result, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => addFromSearch(result)}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0"
+                >
+                  <div className="font-medium text-sm">{result.display_name.split(',')[0]}</div>
+                  <div className="text-xs text-gray-500">{result.display_name}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Hub</label>
@@ -301,7 +377,7 @@ export function LiveRouting() {
           {/* AI Explanation */}
           {result.best_route?.ai_explanation && (
             <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg shadow">
-              <h3 className="font-bold text-xl mb-3">🤖 AI Explanation</h3>
+              <h3 className="font-bold text-xl mb-3">AI Explanation</h3>
               
               <p className="text-gray-800 mb-4">{result.best_route.ai_explanation.summary}</p>
               
