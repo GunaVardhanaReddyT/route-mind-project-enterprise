@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import optimizer, routes, metrics, dynamic, amazon, live
+from app.api.v1 import optimizer, routes, metrics, hubs
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.base import Base
@@ -26,10 +26,13 @@ async def on_startup():
 # Core routing endpoints
 app.include_router(optimizer.router, prefix=f"{settings.API_V1_PREFIX}/optimizer", tags=["optimizer"])
 app.include_router(routes.router, prefix=f"{settings.API_V1_PREFIX}/routes", tags=["routes"])
-app.include_router(dynamic.router, prefix=f"{settings.API_V1_PREFIX}", tags=["dynamic"])
 app.include_router(metrics.router, prefix=f"{settings.API_V1_PREFIX}", tags=["metrics"])
-app.include_router(amazon.router, prefix=f"{settings.API_V1_PREFIX}", tags=["amazon-challenge"])
-app.include_router(live.router, prefix=f"{settings.API_V1_PREFIX}", tags=["live-routing"])
+app.include_router(hubs.router, prefix=f"{settings.API_V1_PREFIX}", tags=["hubs"])
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "routing"}
+
 
 @app.get("/health")
 async def health():
