@@ -4,7 +4,7 @@ const api = axios.create({
   baseURL: window.location.hostname === 'localhost' 
     ? 'http://localhost:8002/api/v1'
     : `http://${window.location.hostname}:8002/api/v1`,
-  timeout: 30000,
+  timeout: 60000,  // Increased to 60 seconds for Mumbai/Bangalore OSRM calls
 })
 
 export interface Route {

@@ -164,7 +164,9 @@ export function LiveRouting() {
       setResult(response.data)
       setSelectedAlt(0)
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Optimization failed')
+      console.error('Optimization error:', err)
+      const errorMsg = err.response?.data?.detail || err.message || 'Optimization failed'
+      alert(`Error: ${errorMsg}`)
     } finally {
       setLoading(false)
     }
