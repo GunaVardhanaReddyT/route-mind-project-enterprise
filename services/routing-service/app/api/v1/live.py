@@ -149,7 +149,7 @@ async def optimize_live_routes(request: LiveRouteRequest):
             })
         
         # Rank by total distance
-        all_routes.sort(key=lambda x: x["solution"]["total_distance"])
+        all_routes.sort(key=lambda x: x["solution"]["total_distance_km"])
         best_route = all_routes[0]
         
         # Build visualization with REAL road paths for ALL alternatives
@@ -210,7 +210,7 @@ async def optimize_live_routes(request: LiveRouteRequest):
                 "is_best": idx == 0,
                 "variant": route_set["variant"],
                 "description": route_set["description"],
-                "total_distance_km": round(solution["total_distance"], 2),
+                "total_distance_km": round(solution["total_distance_km"], 2),
                 "routes": routes_viz
             })
         
@@ -236,13 +236,13 @@ async def optimize_live_routes(request: LiveRouteRequest):
                 "total_vehicles": len(request.vehicles),
                 "alternatives_generated": len(alternatives_viz),
                 "solve_time_ms": solve_time_ms,
-                "best_distance_km": round(best_route["solution"]["total_distance"], 2)
+                "best_distance_km": round(best_route["solution"]["total_distance_km"], 2)
             },
             "alternatives": alternatives_viz,
             "best_route": {
                 "rank": 1,
                 "variant": best_route["variant"],
-                "total_distance_km": round(best_route["solution"]["total_distance"], 2),
+                "total_distance_km": round(best_route["solution"]["total_distance_km"], 2),
                 "ai_explanation": ai_explanation
             },
             "performance": {
@@ -263,7 +263,7 @@ def generate_ai_explanation(solution, stops, vehicles, city):
     """
     Generate AI explanation for why this route is optimal
     """
-    total_distance = solution["total_distance"]
+    total_distance = solution["total_distance_km"]
     num_routes = len(solution["routes"])
     avg_stops_per_route = len(stops) / num_routes if num_routes > 0 else 0
     
