@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface CostAnalysis {
   routes_computed: number
@@ -49,24 +48,6 @@ export default function Metrics() {
     return <div className="text-center py-12 text-red-600">Failed to load cost data</div>
   }
 
-  const chartData = [
-    {
-      name: 'RouteMind',
-      cost: costData.cost_per_route_usd.routemind_hybrid,
-      fill: '#10b981'
-    },
-    {
-      name: 'Pure LLM',
-      cost: costData.cost_per_route_usd.pure_llm_gpt4,
-      fill: '#ef4444'
-    },
-    {
-      name: 'Manual',
-      cost: costData.cost_per_route_usd.manual_planning,
-      fill: '#f59e0b'
-    }
-  ]
-
   const savingsPercentLLM = ((costData.savings_usd.vs_pure_llm / costData.total_cost_usd.pure_llm) * 100).toFixed(1)
   const savingsPercentManual = ((costData.savings_usd.vs_manual / costData.total_cost_usd.manual) * 100).toFixed(1)
 
@@ -104,20 +85,6 @@ export default function Metrics() {
           </p>
           <p className="text-sm text-gray-600 mt-2">vs Pure LLM approach</p>
         </div>
-      </div>
-
-      {/* Cost Comparison Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Cost Per Route Comparison</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis label={{ value: 'Cost (USD)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip formatter={(value: any) => value ? `$${Number(value).toFixed(4)}` : '$0'} />
-            <Bar dataKey="cost" />
-          </BarChart>
-        </ResponsiveContainer>
       </div>
 
       {/* Detailed Comparison */}

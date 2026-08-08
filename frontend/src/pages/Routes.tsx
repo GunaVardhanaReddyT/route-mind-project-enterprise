@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import RouteMap from '../components/map/RouteMap'
 import { useApp } from '../context/AppContext'
 import { optimizeRoutes, replanRoute, OptimizationResult } from '../lib/api'
-import { formatDistance, formatTime, formatCurrency } from '../lib/utils'
+import { formatDistance, formatTime } from '../lib/utils'
 
 const ROUTE_COLORS = ['#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444']
 
@@ -67,7 +67,7 @@ export default function Routes() {
 
     setLoading(true)
     try {
-      const data = await optimizeRoutes(hubId, true)
+      const data = await optimizeRoutes(hubId)
       setResult(data)
     } catch (err) {
       console.error('Optimization failed:', err)
