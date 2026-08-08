@@ -150,22 +150,14 @@ async def optimize_live_routes(request: LiveRouteRequest):
         
         # Rank by total distance
         all_routes.sort(key=lambda x: x["solution"]["total_distance_km"])
+        best_route = all_routes[0]
+        best_distance = best_route["solution"]["total_distance_km"]
         
-        # Filter out duplicate solutions (same total distance)
-        unique_routes = []
-        seen_distances = set()
-        for route_set in all_routes:
-            distance = route_set["solution"]["total_distance_km"]
-            if distance not in seen_distances:
-                unique_routes.append(route_set)
-                seen_distances.add(distance)
-        
-        best_route = unique_routes[0] if unique_routes else all_routes[0]
-        
-        # Build visualization with REAL road paths for unique alternatives only
+        # Build visualization with REAL road paths for ALL alternatives
         alternatives_viz = []
-        for idx, route_set in enumerate(unique_routes[:request.generate_alternatives]):
+        for idx, route_set in enumerate(all_routes[:request.generate_alternatives]):
             solution = route_set["solution"]
+            current_distance = solution["total_distance_km"]
             routes_viz = []
             
             for route_idx, route in enumerate(solution["routes"]):
@@ -196,6 +188,14 @@ async def optimize_live_routes(request: LiveRouteRequest):
                     if last_route:
                         road_path.extend(last_route["coordinates"])
                 
+                # Color logic: green for best, yellow for same distance, red for worse
+                if idx == 0:
+                    route_color = '#10b981'  # Green - best route
+                elif abs(current_distance - best_distance) < 0.01:  # Same distance (tolerance for float comparison)
+                    route_color = '#f59e0b'  # Yellow - alternative with same distance
+                else:
+                    route_color = '#ef4444'  # Red - worse route
+                
                 routes_viz.append({
                     "route_id": route_idx + 1,
                     "vehicle_name": vehicle["plate_number"],
@@ -209,7 +209,7 @@ async def optimize_live_routes(request: LiveRouteRequest):
                         for s in route_stops
                     ],
                     "distance_km": route["distance_km"],
-                    "color": '#10b981' if idx == 0 else '#ef4444',  # Green for best, red for others
+                    "color": route_color,
                     "road_path": road_path
                 })
             
